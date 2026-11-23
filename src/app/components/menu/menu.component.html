@@ -1,16 +1,16 @@
 <aside class="menu">
-    <h2>oBOTICÁRIO</h2>
+    <h2>{{ usuarioAtual.nomeLoja || 'oBOTICÁRIO' }}</h2>
 
     <nav>
-        <a href="">Home</a>
-        <a href="/clientes">Clientes</a>
-        <a href="/vendas">Vendas</a>
-        <a href="/financeiro">Financeiro</a>
-        <a href="/inventario">Inventário</a>
+        <a routerLink="/" routerLinkActive="ativo" [routerLinkActiveOptions]="{exact: true}">Home</a>
+        <a routerLink="/clientes" routerLinkActive="ativo">Clientes</a>
+        <a routerLink="/vendas" routerLinkActive="ativo">Vendas</a>
+        <a routerLink="/financeiro" routerLinkActive="ativo">Financeiro</a>
+        <a routerLink="/inventario" routerLinkActive="ativo">Inventário</a>
     </nav>
 
     <div class="frase">
-        <p>Beleza é<br>se sentir bem.</p>
-        <small>O BOTICÁRIO</small>
+        <p>{{ usuarioAtual.fraseBanner || 'Beleza é se sentir bem.' }}</p>
+        <small>{{ usuarioAtual.nomeLoja || 'O BOTICÁRIO' }}</small>
     </div>
 </aside>

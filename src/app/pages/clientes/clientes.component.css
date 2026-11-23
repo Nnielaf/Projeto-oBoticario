@@ -308,4 +308,129 @@ tbody tr:hover {
     }
 }
 
+/* Linha selecionada e modal */
+.linha-selecionada {
+    background: #EBF3EE !important;
+    border-left: 4px solid #1F5C46;
+}
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 59, 46, 0.6);
+    backdrop-filter: blur(3px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 16px;
+}
+
+.modal-box {
+    background: white;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 540px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    overflow: hidden;
+}
+
+.modal-box-header {
+    background: #0F3B2E;
+    color: white;
+    padding: 18px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-box-header h3 {
+    font-size: 17px;
+    font-weight: 500;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.form-cliente-modal {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.campo-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.campo-grupo label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1C2B24;
+}
+
+.campo-grupo input,
+.campo-grupo select {
+    padding: 10px 12px;
+    border: 1px solid #E7E3DA;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+}
+
+.campo-grupo input:focus,
+.campo-grupo select:focus {
+    border-color: #1F5C46;
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.modal-acoes {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 16px;
+    border-top: 1px solid #E7E3DA;
+}
+
+.btn-cancel {
+    background: #F4F1EA;
+    border: 1px solid #E7E3DA;
+    padding: 9px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.btn-confirm {
+    background: #0F3B2E;
+    color: white;
+    border: none;
+    padding: 9px 20px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-confirm:hover {
+    background: #1F5C46;
+}
+
+
 

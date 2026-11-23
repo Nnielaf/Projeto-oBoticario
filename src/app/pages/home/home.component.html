@@ -1,125 +1,120 @@
 <app-menu></app-menu>
 
-    <main class="conteudo">
-        <header class="topo">
-            <input type="text" placeholder="Buscar no sistema...">
-            <div class="usuario">Olá, Administrador</div>
-        </header>
+<main class="conteudo">
+    <header class="topo">
+        <input type="text" placeholder="Buscar no sistema..." [(ngModel)]="termoBusca" (input)="filtrarVendas()">
+        <div class="usuario" (click)="abrirModalUsuario()" style="cursor: pointer;"
+            title="Clique para gerenciar usuários e banco JSON">
+            <span class="user-avatar"
+                style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: #2b6b53; color: white; font-weight: bold; font-size: 12px; margin-right: 6px;">{{
+                usuarioAtual.avatar || 'A' }}</span>
+            Olá, {{ usuarioAtual.nome || 'Administrador' }}
+            <small style="margin-left: 6px; font-size: 11px; opacity: 0.7;">⚙️</small>
+        </div>
+    </header>
 
-        <section class="boas-vindas">
-            <h1>Bem-vindo(a)!</h1>
-            <p>Aqui você acompanha o resumo do seu negócio.</p>
-        </section>
+    <section class="boas-vindas">
+        <h1>Bem-vindo(a), {{ usuarioAtual.nome || 'Administrador' }}!</h1>
+        <p>Aqui você acompanha o resumo dinâmico do seu negócio em tempo real.</p>
+    </section>
 
-        <section class="banner">
-            <div class="texto-banner">
-                <h2>O Boticário<br>é beleza que transforma</h2>
-                <p>Mais do que produtos, entregamos<br>
-                autocuidado, autoestima e bem-estar.</p>
-                <button>Conheça nossos produtos</button>
+    <section class="banner">
+        <div class="texto-banner">
+            <h2>{{ usuarioAtual.fraseBanner || 'O Boticário é beleza que transforma' }}</h2>
+            <p>{{ usuarioAtual.subtituloBanner || 'Mais do que produtos, entregamos autocuidado, autoestima e bem-estar.' }}</p>
+            <button routerLink="/inventario">Conheça nossos produtos</button>
+        </div>
+
+        <div class="frascos">
+            <div class="frasco verde">
+                <div></div>
+            </div>
+            <div class="frasco rosa">
+                <div></div>
+            </div>
+            <div class="frasco claro">
+                <div></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="resumos">
+        <div class="cartao">
+            <h3>Clientes</h3>
+            <strong>{{ qtdClientes }}</strong>
+            <p>Clientes cadastrados</p>
+        </div>
+
+        <div class="cartao">
+            <h3>Vendas</h3>
+            <strong>{{ qtdVendas }}</strong>
+            <p>Vendas no mês</p>
+        </div>
+
+        <div class="cartao">
+            <h3>Financeiro</h3>
+            <strong>{{ formatarMoeda(faturamentoTotal) }}</strong>
+            <p>Faturamento do mês</p>
+            <small>+ {{ usuarioAtual.percentualCrescimentoFaturamento || 15 }}%</small>
+        </div>
+
+        <div class="cartao">
+            <h3>Inventário</h3>
+            <strong>{{ qtdEstoque }}</strong>
+            <p>Produtos em estoque</p>
+        </div>
+    </section>
+
+    <section class="parte-inferior">
+        <div class="vendas">
+            <div class="titulo-tabela">
+                <h3>Últimas vendas</h3>
+                <a routerLink="/vendas">Ver todas</a>
             </div>
 
-            <div class="frascos">
-                <div class="frasco verde"><div></div></div>
-                <div class="frasco rosa"><div></div></div>
-                <div class="frasco claro"><div></div></div>
-            </div>
-        </section>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Data</th>
+                        <th>Produto(s)</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let venda of ultimasVendasFiltradas">
+                        <td>{{ venda.clienteNome }}</td>
+                        <td>{{ venda.data }}</td>
+                        <td>{{ venda.descricaoProdutos }}</td>
+                        <td>{{ formatarMoeda(venda.valorTotal) }}</td>
+                    </tr>
+                    <tr *ngIf="ultimasVendasFiltradas.length === 0">
+                        <td colspan="4" style="text-align: center; color: #888; padding: 20px;">Nenhuma venda registrada
+                            até o momento.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-        <section class="resumos">
-            <div class="cartao">
-                <h3>Clientes</h3>
-                <strong>{{qtdClientes}}</strong>
-                <p>Clientes cadastrados</p>
-            </div>
-
-            <div class="cartao">
-                <h3>Vendas</h3>
-                <strong>{{qtdVendas}}</strong>
-                <p>Vendas no mês</p>
-            </div>
-
-            <div class="cartao">
-                <h3>Financeiro</h3>
-                <strong>R$ 12.850,00</strong>
-                <p>Faturamento do mês</p>
-                <small>+ 15%</small>
-            </div>
-
-            <div class="cartao">
-                <h3>Inventário</h3>
-                <strong>{{qtdEstoque}}</strong>
-                <p>Produtos em estoque</p>
-            </div>
-        </section>
-
-        <section class="parte-inferior">
-            <div class="vendas">
-                <div class="titulo-tabela">
-                    <h3>Últimas vendas</h3>
-                    <a href="#">Ver todas</a>
-                </div>
-
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Cliente</th>
-                            <th>Data</th>
-                            <th>Produto(s)</th>
-                            <th>Valor</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Mariana Silva</td>
-                            <td>16/10/2024</td>
-                            <td>Floratta + Hidratante</td>
-                            <td>R$ 189,90</td>
-                        </tr>
-                        <tr>
-                            <td>João Santos</td>
-                            <td>15/10/2024</td>
-                            <td>Malbec</td>
-                            <td>R$ 159,90</td>
-                        </tr>
-                        <tr>
-                            <td>Ana Costa</td>
-                            <td>15/10/2024</td>
-                            <td>Nativa SPA Ameixa</td>
-                            <td>R$ 129,90</td>
-                        </tr>
-                        <tr>
-                            <td>Lucas Oliveira</td>
-                            <td>14/10/2024</td>
-                            <td>Kit Presente Cuide-se Bem</td>
-                            <td>R$ 99,90</td>
-                        </tr>
-                        <tr>
-                            <td>Fernanda Lima</td>
-                            <td>14/10/2024</td>
-                            <td>Egeo Dolce</td>
-                            <td>R$ 139,90</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="coluna-lateral">
-                <div class="acoes">
-                    <h3>Ações rápidas</h3>
-                    <div class="botoes">
-                        <button>Cadastrar cliente</button>
-                        <button>Registrar venda</button>
-                        <button>Atualizar estoque</button>
-                        <button>Ver fluxo financeiro</button>
-                    </div>
-                </div>
-
-                <div class="mensagem">
-                    <h3>Juntos por um<br>mundo mais bonito</h3>
-                    <p>O Boticário e você, por um<br>futuro mais sustentável.</p>
-                    <button>Saiba mais</button>
+        <div class="coluna-lateral">
+            <div class="acoes">
+                <h3>Ações rápidas</h3>
+                <div class="botoes">
+                    <button routerLink="/clientes">Cadastrar cliente</button>
+                    <button routerLink="/vendas">Registrar venda</button>
+                    <button routerLink="/inventario">Atualizar estoque</button>
+                    <button routerLink="/financeiro">Ver fluxo financeiro</button>
                 </div>
             </div>
-        </section>
-    </main>
+
+            <div class="mensagem">
+                <h3>Juntos por um<br>mundo mais bonito</h3>
+                <p>O Boticário e você, por um<br>futuro mais sustentável.</p>
+                <button (click)="abrirModalUsuario()">Gerenciar Usuários</button>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- Modal de Usuários e Banco JSON -->
+<app-usuario-modal *ngIf="modalUsuarioAberto" (fechar)="fecharModalUsuario()"></app-usuario-modal>

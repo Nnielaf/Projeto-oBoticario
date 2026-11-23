@@ -6,9 +6,10 @@ import { InventarioComponent } from './pages/inventario/inventario.component';
 import { VendasComponent } from './pages/vendas/vendas.component';
 
 export const routes: Routes = [
-    {path: "",component:HomeComponent},
-    {path: "clientes",component:ClientesComponent},
-    {path: "financeiro",component:FinanceiroComponent},
-    {path: "inventario",component:InventarioComponent},
-    {path: "vendas",component:VendasComponent}
+    { path: "", component: HomeComponent },
+    { path: "clientes", component: ClientesComponent },
+    { path: "financeiro", component: FinanceiroComponent },
+    { path: "inventario", component: InventarioComponent },
+    { path: "vendas", component: VendasComponent },
+    { path: "**", redirectTo: "" }
 ];

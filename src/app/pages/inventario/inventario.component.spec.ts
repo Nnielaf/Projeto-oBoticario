@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { provideRouter } from '@angular/router';
 import { InventarioComponent } from './inventario.component';
 
 describe('InventarioComponent', () => {
@@ -8,9 +8,10 @@ describe('InventarioComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [InventarioComponent]
+      imports: [InventarioComponent],
+      providers: [provideRouter([])]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(InventarioComponent);
     component = fixture.componentInstance;

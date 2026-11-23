@@ -1,139 +1,177 @@
 <app-menu></app-menu>
 
-    <main class="conteudo">
-        <header class="topo">
-            <input type="search" placeholder="Buscar no sistema...">
-            <p>Olá, Administrador</p>
+<main class="conteudo">
+    <header class="topo">
+        <input type="search" placeholder="Buscar no sistema..." [(ngModel)]="termoBusca" (input)="filtrarMovimentacoes()">
+        <p (click)="abrirModalUsuario()" style="cursor: pointer;" title="Gerenciar Usuários & Banco JSON">
+            <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: #2b6b53; color: white; font-weight: bold; font-size: 11px; margin-right: 5px;">{{ usuarioAtual.avatar || 'A' }}</span>
+            Olá, {{ usuarioAtual.nome || 'Administrador' }} ⚙️
+        </p>
+    </header>
+
+    <section class="cabecalho">
+        <div>
+            <h1>Financeiro</h1>
+            <p>Acompanhe o faturamento, despesas e o fluxo financeiro dinâmico da loja.</p>
+        </div>
+
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <select [(ngModel)]="mesSelecionado" (change)="filtrarMovimentacoes()">
+                <option *ngFor="let m of listaMeses" [value]="m">{{ m }}</option>
+            </select>
+
+            <button type="button" class="btn-nova-transacao" (click)="abrirModalNovo()">
+                + Nova movimentação
+            </button>
+        </div>
+    </section>
+
+    <section class="resumos">
+        <div class="cartao">
+            <p>Receita total</p>
+            <strong>{{ formatarMoeda(receitaTotal) }}</strong>
+            <small>+ {{ usuarioAtual.percentualCrescimentoReceita || 15 }}%</small>
+        </div>
+        <div class="cartao despesa">
+            <p>Despesas totais</p>
+            <strong>{{ formatarMoeda(despesasTotal) }}</strong>
+            <small>- {{ usuarioAtual.percentualCrescimentoDespesas || 8 }}%</small>
+        </div>
+        <div class="cartao">
+            <p>Lucro líquido</p>
+            <strong>{{ formatarMoeda(lucroLiquido) }}</strong>
+            <small>+ {{ usuarioAtual.percentualCrescimentoLucro || 18 }}%</small>
+        </div>
+    </section>
+
+    <section class="graficos">
+        <div class="painel">
+            <h2>Faturamento dos últimos 7 dias</h2>
+            <div class="grafico">
+                <div class="valores">
+                    <span *ngFor="let escala of escalasGrafico">{{ escala }}</span>
+                </div>
+                <div class="barras">
+                    <div class="coluna" *ngFor="let col of barrasGrafico">
+                        <div [style.height.%]="col.altura" [title]="col.label + ': ' + formatarMoeda(col.valor)"></div>
+                        <span>{{ col.label }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="painel">
+            <h2>Despesas por categoria</h2>
+            <div class="categorias">
+                <div class="grafico-redondo" [style.background]="gradienteConico"></div>
+                <ul>
+                    <li *ngFor="let cat of despesasCategorias">
+                        <span class="cor" [ngClass]="cat.classe"></span>
+                        {{ cat.nome }} <b>{{ cat.percentual }}%</b>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="painel movimentacoes">
+        <h2>Movimentações recentes</h2>
+        <div class="tabela">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Descrição</th>
+                        <th>Categoria</th>
+                        <th>Valor</th>
+                        <th>Tipo</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let mov of movimentacoesFiltradas">
+                        <td>{{ mov.data }}</td>
+                        <td>{{ mov.descricao }}</td>
+                        <td>{{ mov.categoria }}</td>
+                        <td [class.entrada]="mov.tipo === 'Receita'" [class.saida]="mov.tipo === 'Despesa'">
+                            {{ mov.tipo === 'Receita' ? '+' : '-' }}{{ formatarMoeda(mov.valor) }}
+                        </td>
+                        <td [class.entrada]="mov.tipo === 'Receita'" [class.saida]="mov.tipo === 'Despesa'">
+                            {{ mov.tipo }}
+                        </td>
+                        <td>
+                            <button class="btn-del-transacao" type="button" (click)="excluirTransacao(mov.id)" title="Excluir movimentação">
+                                🗑️
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr *ngIf="movimentacoesFiltradas.length === 0">
+                        <td colspan="6" style="text-align: center; color: #888; padding: 20px;">
+                            Nenhuma movimentação financeira registrada.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<!-- Modal Dinâmico de Nova Movimentação Financeira -->
+<div class="modal-backdrop" *ngIf="modalAberto" (click)="fecharModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+        <header class="modal-box-header">
+            <h3>Nova Movimentação Financeira</h3>
+            <button type="button" class="btn-close" (click)="fecharModal()">&times;</button>
         </header>
 
-        <section class="cabecalho">
-            <div>
-                <h1>Financeiro</h1>
-                <p>Acompanhe o faturamento, despesas e o fluxo financeiro da loja.</p>
-            </div>
+        <form (ngSubmit)="salvarTransacao()" class="form-fin-modal">
+            <div class="grid-2">
+                <div class="campo-grupo">
+                    <label>Tipo de Movimentação *</label>
+                    <select [(ngModel)]="formTransacao.tipo" name="tipo">
+                        <option value="Receita">Receita (Entrada +)</option>
+                        <option value="Despesa">Despesa (Saída -)</option>
+                    </select>
+                </div>
 
-            <select>
-                <option>Janeiro de 2026</option>
-                <option>Fevereiro de 2026</option>
-                <option>Março de 2026</option>
-                <option>Abril de 2026</option>
-                <option>Maio de 2026</option>
-                <option>Junho  de 2026</option>
-                <option>Julho  de 2026</option>
-                <option>Agosto  de 2026</option>
-                <option>Setembro  de 2026</option>
-                <option>Outubro  de 2026</option>
-                <option>Novembro de 2026</option>
-                <option>Dezembro  de 2026</option>
-            </select>
-        </section>
-
-        <section class="resumos">
-            <div class="cartao">
-                <p>Receita total</p>
-                <strong>R$ {{receitaTotal}}</strong>
-                <small>+ {{porReceita}}%</small>
-            </div>
-            <div class="cartao despesa">
-                <p>Despesas totais</p>
-                <strong>R$ {{despesasTotal}}</strong>
-                <small>- {{porDespesas}}%</small>
-            </div>
-            <div class="cartao">
-                <p>Lucro líquido</p>
-                <strong>R$ {{lucroLiquido}}</strong>
-                <small>+ {{porLucro}}%</small>
-            </div>
-        </section>
-
-        <section class="graficos">
-            <div class="painel">
-                <h2>Faturamento dos últimos 7 dias</h2>
-                <div class="grafico">
-                    <div class="valores">
-                        <span>R$ 4.000</span>
-                        <span>R$ 3.000</span>
-                        <span>R$ 2.000</span>
-                        <span>R$ 1.000</span>
-                        <span>R$ 0</span>
-                    </div>
-                    <div class="barras">
-                        <div class="coluna"><div style="height: 43%"></div><span>10/10</span></div>
-                        <div class="coluna"><div style="height: 65%"></div><span>11/10</span></div>
-                        <div class="coluna"><div style="height: 50%"></div><span>12/10</span></div>
-                        <div class="coluna"><div style="height: 78%"></div><span>13/10</span></div>
-                        <div class="coluna"><div style="height: 58%"></div><span>14/10</span></div>
-                        <div class="coluna"><div style="height: 83%"></div><span>15/10</span></div>
-                        <div class="coluna"><div style="height: 95%"></div><span>16/10</span></div>
-                    </div>
+                <div class="campo-grupo">
+                    <label>Valor (R$) *</label>
+                    <input type="number" step="0.01" min="0.01" [(ngModel)]="formTransacao.valor" name="valor" required>
                 </div>
             </div>
 
-            <div class="painel">
-                <h2>Despesas por categoria</h2>
-                <div class="categorias">
-                    <div class="grafico-redondo"></div>
-                    <ul>
-                        <li><span class="cor fornecedores"></span>Fornecedores <b>45%</b></li>
-                        <li><span class="cor marketing"></span>Marketing <b>20%</b></li>
-                        <li><span class="cor salarios"></span>Salários <b>15%</b></li>
-                        <li><span class="cor outros"></span>Outros <b>20%</b></li>
-                    </ul>
+            <div class="campo-grupo">
+                <label>Descrição *</label>
+                <input type="text" [(ngModel)]="formTransacao.descricao" name="descricao" placeholder="Ex: Venda de perfumes, Aluguel..." required>
+            </div>
+
+            <div class="grid-2">
+                <div class="campo-grupo">
+                    <label>Categoria</label>
+                    <select [(ngModel)]="formTransacao.categoria" name="categoria">
+                        <option value="Vendas">Vendas</option>
+                        <option value="Fornecedores">Fornecedores</option>
+                        <option value="Contas fixas">Contas fixas</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Salários">Salários</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+
+                <div class="campo-grupo">
+                    <label>Data</label>
+                    <input type="text" [(ngModel)]="formTransacao.data" name="data" placeholder="DD/MM/AAAA">
                 </div>
             </div>
-        </section>
 
-        <section class="painel movimentacoes">
-            <h2>Movimentações recentes</h2>
-            <div class="tabela">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Descrição</th>
-                            <th>Categoria</th>
-                            <th>Valor</th>
-                            <th>Tipo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>16/10/2024</td>
-                            <td>Venda de produtos</td>
-                            <td>Vendas</td>
-                            <td class="entrada">+R$ 249,80</td>
-                            <td class="entrada">Receita</td>
-                        </tr>
-                        <tr>
-                            <td>15/10/2024</td>
-                            <td>Compra de produtos</td>
-                            <td>Fornecedores</td>
-                            <td class="saida">-R$ 1.250,00</td>
-                            <td class="saida">Despesa</td>
-                        </tr>
-                        <tr>
-                            <td>14/10/2024</td>
-                            <td>Energia elétrica</td>
-                            <td>Contas fixas</td>
-                            <td class="saida">-R$ 320,00</td>
-                            <td class="saida">Despesa</td>
-                        </tr>
-                        <tr>
-                            <td>13/10/2024</td>
-                            <td>Venda de produtos</td>
-                            <td>Vendas</td>
-                            <td class="entrada">+R$ 189,90</td>
-                            <td class="entrada">Receita</td>
-                        </tr>
-                        <tr>
-                            <td>12/10/2024</td>
-                            <td>Marketing Digital</td>
-                            <td>Marketing</td>
-                            <td class="saida">-R$ 150,00</td>
-                            <td class="saida">Despesa</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="modal-acoes">
+                <button type="button" class="btn-cancel" (click)="fecharModal()">Cancelar</button>
+                <button type="submit" class="btn-confirm">Salvar Movimentação</button>
             </div>
-        </section>
-    </main>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de Usuários do Sistema -->
+<app-usuario-modal *ngIf="modalUsuarioAberto" (fechar)="fecharModalUsuario()"></app-usuario-modal>
